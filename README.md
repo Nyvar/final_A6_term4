@@ -1,4 +1,5 @@
-# Team project for FT SD A 6
-There are 2 branches of development:
- - **web**: branch for storing Website and API
- - **mobile**: branch for storing React Native mobile app
+# Website and API
+There are 3 components:
+ - **frontend website**: Displays website for web users
+ - **backend website**: For admin to manage website through web browser
+ - **API**: For mobile programming interface
