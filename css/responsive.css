@@ -1,0 +1,897 @@
+/* ============================================
+   MONEFY - COMPLETE RESPONSIVE STYLES
+   Mobile-First Approach
+   ============================================ */
+
+/* Base Mobile Styles (applies to all devices, then overrides for larger screens) */
+
+/* Container adjustments */
+.app-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   SMALL MOBILES (iPhone SE, Galaxy Fold, etc.)
+   Width: 320px - 480px
+   ============================================ */
+@media (max-width: 480px) {
+    /* Typography */
+    body {
+        font-size: 14px;
+    }
+    
+    /* Top Bar */
+    .topbar {
+        padding: 12px 16px;
+    }
+    
+    .topbar-title {
+        font-size: 18px;
+    }
+    
+    .topbar-sub {
+        font-size: 10px;
+    }
+    
+    .topbar-icons svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Dashboard Layout - Stack vertically */
+    .dashboard-layout {
+        display: flex;
+        flex-direction: column;
+        padding: 12px;
+        gap: 20px;
+    }
+    
+    /* Reorder panels - calculator on top for quick input */
+    .left-panel {
+        order: 2;
+    }
+    
+    .right-panel {
+        order: 1;
+    }
+    
+    /* Donut Chart Container */
+    .donut-container {
+        margin: 10px auto;
+        max-width: 240px;
+    }
+    
+    .donut-wrapper svg {
+        width: 100%;
+        height: auto;
+    }
+    
+    .donut-income,
+    .donut-expense {
+        font-size: 12px;
+    }
+    
+    /* Category Breakdown */
+    .category-breakdown {
+        margin: 16px 0;
+        padding: 12px;
+    }
+    
+    .breakdown-title {
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+    
+    .breakdown-item {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .breakdown-label {
+        font-size: 12px;
+    }
+    
+    /* Calculator Display */
+    .calc-display {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .calc-amount {
+        font-size: 32px;
+    }
+    
+    .calc-amount small {
+        font-size: 14px;
+    }
+    
+    /* Categories Grid - 3 columns on small mobiles */
+    .categories {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px 12px;
+        padding: 12px;
+    }
+    
+    .cat-icon {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .cat-icon-circle {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 6px;
+    }
+    
+    .cat-icon-circle svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .cat-icon span {
+        font-size: 11px;
+        text-align: center;
+    }
+    
+    /* Calculator Keypad */
+    .calc-keypad {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .key {
+        padding: 14px;
+        font-size: 16px;
+        border-radius: 12px;
+    }
+    
+    /* Date Filter Bar */
+    .date-filter-bar {
+        padding: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        width: 100%;
+    }
+    
+    .filter-buttons::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .filter-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    
+    .date-picker-wrapper {
+        width: 100%;
+        justify-content: center;
+        padding: 8px;
+        font-size: 12px;
+    }
+    
+    /* Bottom Bar - Show on mobile only */
+    .bottom-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 12px 20px;
+        z-index: 100;
+    }
+    
+    .bottom-btns {
+        display: flex;
+        position: fixed;
+        bottom: 70px;
+        right: 20px;
+        gap: 12px;
+        z-index: 100;
+    }
+    
+    .btn-circle {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .btn-circle svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* Modals */
+    .modal {
+        width: 95%;
+        margin: 16px;
+        padding: 20px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+    
+    .modal h3 {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+    
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .category-option {
+        padding: 10px;
+    }
+    
+    .category-icon {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .category-option .label {
+        font-size: 11px;
+    }
+    
+    .modal-input,
+    .modal-select {
+        padding: 12px;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+    
+    .modal-btns {
+        gap: 12px;
+        margin-top: 16px;
+    }
+    
+    .modal-btn {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    /* Account Selector for Transfer */
+    .account-selector {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin: 12px 0;
+    }
+    
+    .account-option {
+        padding: 10px;
+    }
+    
+    .account-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    /* History Panel */
+    .history-panel {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .transaction-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .transaction-info {
+        width: 100%;
+    }
+    
+    .transaction-amount {
+        align-self: flex-end;
+        font-size: 14px;
+    }
+    
+    .transaction-cat {
+        font-size: 13px;
+    }
+    
+    .transaction-date {
+        font-size: 10px;
+    }
+    
+    .transaction-note {
+        font-size: 10px;
+    }
+    
+    .delete-tx {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+    
+    /* Search Modal */
+    .search-input-wrapper {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .search-input-wrapper button {
+        padding: 12px;
+    }
+    
+    /* Dropdown Menu */
+    .dropdown-menu {
+        width: calc(100% - 32px);
+        left: 16px;
+        right: 16px;
+    }
+}
+
+/* ============================================
+   REGULAR MOBILES (iPhone 6/7/8, Android)
+   Width: 481px - 767px
+   ============================================ */
+@media (min-width: 481px) and (max-width: 767px) {
+    /* Dashboard - Single column */
+    .dashboard-layout {
+        display: flex;
+        flex-direction: column;
+        padding: 16px;
+        gap: 24px;
+    }
+    
+    .left-panel {
+        order: 2;
+    }
+    
+    .right-panel {
+        order: 1;
+    }
+    
+    /* Categories - 4 columns on larger mobiles */
+    .categories {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px 16px;
+        padding: 16px;
+    }
+    
+    .cat-icon-circle {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .cat-icon span {
+        font-size: 12px;
+    }
+    
+    /* Keypad */
+    .calc-keypad {
+        gap: 10px;
+        padding: 16px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .key {
+        padding: 16px;
+        font-size: 18px;
+    }
+    
+    /* Bottom Bar */
+    .bottom-bar {
+        display: flex;
+    }
+    
+    .bottom-btns {
+        display: flex;
+    }
+    
+    /* Modals */
+    .modal {
+        width: 90%;
+        max-width: 450px;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    /* Filter bar horizontal scroll */
+    .filter-buttons {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* History panel */
+    .history-panel {
+        width: 400px;
+    }
+}
+
+/* ============================================
+   TABLETS (iPad, Surface, etc.)
+   Width: 768px - 1023px
+   ============================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+    /* Two column layout */
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    /* Hide mobile elements */
+    .bottom-bar,
+    .bottom-btns {
+        display: none;
+    }
+    
+    /* Categories - 5 columns on tablets */
+    .categories {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .cat-icon-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .cat-icon-circle svg {
+        width: 28px;
+        height: 28px;
+    }
+    
+    /* Calculator */
+    .calc-keypad {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        max-width: 450px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .key {
+        padding: 18px;
+        font-size: 20px;
+    }
+    
+    .calc-display {
+        padding: 20px;
+    }
+    
+    .calc-amount {
+        font-size: 42px;
+    }
+    
+    /* Donut chart */
+    .donut-container {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    /* Category breakdown */
+    .category-breakdown {
+        padding: 16px;
+    }
+    
+    /* Modals - larger on tablets */
+    .modal {
+        max-width: 550px;
+        width: 90%;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    /* Date filter - no horizontal scroll needed */
+    .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .filter-btn {
+        padding: 8px 18px;
+    }
+    
+    /* History panel */
+    .history-panel {
+        width: 500px;
+    }
+    
+    /* Transfer modal */
+    .account-selector {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+}
+
+/* ============================================
+   DESKTOPS & LAPTOPS
+   Width: 1024px - 1439px
+   ============================================ */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    /* Main container max width */
+    .app-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Two column with better proportions */
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: 0.8fr 1.2fr;
+        gap: 30px;
+        padding: 30px;
+    }
+    
+    /* Hide mobile elements */
+    .bottom-bar,
+    .bottom-btns {
+        display: none;
+    }
+    
+    /* Categories - 6 columns on desktop */
+    .categories {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 24px;
+        padding: 24px;
+    }
+    
+    .cat-icon-circle {
+        width: 70px;
+        height: 70px;
+        transition: transform 0.2s;
+    }
+    
+    .cat-icon-circle:hover {
+        transform: scale(1.05);
+    }
+    
+    .cat-icon-circle svg {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .cat-icon span {
+        font-size: 13px;
+        margin-top: 8px;
+    }
+    
+    /* Calculator */
+    .calc-keypad {
+        gap: 14px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .key {
+        padding: 20px;
+        font-size: 22px;
+        transition: all 0.2s;
+    }
+    
+    .key:hover {
+        transform: scale(0.98);
+    }
+    
+    .calc-amount {
+        font-size: 48px;
+    }
+    
+    /* Donut chart */
+    .donut-container {
+        max-width: 320px;
+    }
+    
+    /* Left panel sticky */
+    .left-panel {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+    
+    /* Modals */
+    .modal {
+        max-width: 600px;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+    
+    /* Hover effects */
+    .category-option:hover {
+        transform: translateY(-2px);
+    }
+    
+    .account-option:hover {
+        background: var(--gray-bg);
+        transform: translateY(-2px);
+    }
+    
+    /* History panel */
+    .history-panel {
+        width: 550px;
+    }
+}
+
+/* ============================================
+   LARGE DESKTOPS & 4K SCREENS
+   Width: 1440px+
+   ============================================ */
+@media (min-width: 1440px) {
+    .app-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .dashboard-layout {
+        gap: 40px;
+        padding: 40px;
+    }
+    
+    .categories {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 32px;
+    }
+    
+    .cat-icon-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .cat-icon-circle svg {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .calc-keypad {
+        gap: 16px;
+        max-width: 550px;
+    }
+    
+    .key {
+        padding: 24px;
+        font-size: 24px;
+    }
+    
+    .calc-amount {
+        font-size: 56px;
+    }
+    
+    .donut-container {
+        max-width: 380px;
+    }
+    
+    .modal {
+        max-width: 700px;
+    }
+    
+    .category-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* ============================================
+   LANDSCAPE MODE (Mobile rotated)
+   ============================================ */
+@media (max-width: 900px) and (orientation: landscape) {
+    .app-container {
+        padding-bottom: 0;
+    }
+    
+    .dashboard-layout {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .categories {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+    
+    .cat-icon-circle {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .calc-keypad {
+        gap: 6px;
+    }
+    
+    .key {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .bottom-bar,
+    .bottom-btns {
+        display: none;
+    }
+    
+    .modal {
+        max-height: 80vh;
+    }
+    
+    .history-panel {
+        max-height: 80vh;
+    }
+}
+
+/* ============================================
+   HIGH DPI / RETINA SCREENS
+   ============================================ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .cat-icon-circle svg,
+    .category-icon svg {
+        stroke-width: 1.8;
+    }
+    
+    .key {
+        border-width: 0.5px;
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (if user prefers)
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    .modal {
+        background: #1e1e1e;
+        border-color: #333;
+    }
+    
+    .modal-input,
+    .modal-select {
+        background: #2a2a2a;
+        border-color: #444;
+        color: #fff;
+    }
+    
+    .category-option {
+        background: #2a2a2a;
+    }
+    
+    .search-result-item {
+        border-color: #333;
+    }
+    
+    .search-result-item:hover {
+        background: #2a2a2a;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY - Reduced Motion
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+    .topbar,
+    .bottom-bar,
+    .bottom-btns,
+    .date-filter-bar,
+    .calc-keypad,
+    .categories,
+    .modal-overlay,
+    .history-panel,
+    .dropdown-menu,
+    .sidebar-overlay,
+    .right-sidebar {
+        display: none !important;
+    }
+    
+    .dashboard-layout {
+        display: block;
+    }
+    
+    .donut-container,
+    .category-breakdown {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
+
+/* ============================================
+   UTILITY CLASSES FOR RESPONSIVE BEHAVIOR
+   ============================================ */
+.hide-on-mobile {
+    display: inherit;
+}
+
+.show-on-mobile {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+    
+    .show-on-mobile {
+        display: flex !important;
+    }
+}
+
+/* Touch-friendly tap targets */
+@media (max-width: 768px) {
+    button,
+    .filter-btn,
+    .cat-icon,
+    .category-option,
+    .account-option,
+    .dropdown-item,
+    .sidebar-item {
+        min-height: 44px;
+        cursor: pointer;
+    }
+    
+    /* Remove hover effects on touch devices */
+    .key:hover,
+    .cat-icon-circle:hover,
+    .filter-btn:hover {
+        transform: none;
+    }
+}
+
+/* Prevent text size adjustment on orientation change */
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Responsive images */
+img, svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Better form elements on mobile */
+@media (max-width: 768px) {
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents zoom on focus in iOS */
+    }
+}
