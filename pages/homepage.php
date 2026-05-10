@@ -12,7 +12,7 @@
 <!-- Header -->
 <header>
   <div class="logo">
-    <img src="images/luyfy.png" alt="Luyfy Logo">
+    <img src="../images/luyfy.png" alt="Luyfy Logo">
   </div>
 
   <nav>
@@ -36,27 +36,27 @@
     <div class="hero-badges">
     <!-- First badge -->
     <div class="badge flower-wrap">
-      <img src="images/leftleaf.png" alt="Flower Left" class="wrap-img left">
+      <img src="../images/leftleaf.png" alt="Flower Left" class="wrap-img left">
       <span>5.8+ million downloads</span>
-      <img src="images/rightleaf.png" alt="Flower Right" class="wrap-img right">
+      <img src="../images/rightleaf.png" alt="Flower Right" class="wrap-img right">
     </div>
 
     <!-- Second badge with text + logos -->
     <div class="badge leaf-wrap">
-      <img src="images/leftleaf.png" alt="Leaf Left" class="wrap-img left">
+      <img src="../images/leftleaf.png" alt="Leaf Left" class="wrap-img left">
       <span>Best expense app</span>
       <div class="store-logos">
-        <img src="images/apple.png" alt="Apple Store">
-        <img src="images/playstore.png" alt="Google Play">
+        <img src="../images/apple.png" alt="Apple Store">
+        <img src="../images/playstore.png" alt="Google Play">
       </div>
-      <img src="images/rightleaf.png" alt="Leaf Right" class="wrap-img right">
+      <img src="../images/rightleaf.png" alt="Leaf Right" class="wrap-img right">
     </div>
   </div>
     <h1>STABILIZE YOUR FINANCES</h1>
     <p>Smart budget app that helps you track expenses, save, invest, and achieve financial enlightenment.</p>
     <div class="download-btns">
-      <img src="images/appledownload.png" alt="App Store" class="download-btn">
-      <img src="images/playstoredownload.png" alt="Google Play" class="download-btn">
+      <img src="../images/appledownload.png" alt="App Store" class="download-btn">
+      <img src="../images/playstoredownload.png" alt="Google Play" class="download-btn">
     </div>
 
     <p>Trusted by 6700 people worldwide</p>
@@ -65,17 +65,17 @@
 
   
 <section class="phone-showcase">
-  <img src="images/phone.png" alt="Phone" class="phone-img">
+  <img src="../images/phone.png" alt="Phone" class="phone-img">
 
   <!-- Logos -->
-  <img src="images/logo1.png" class="floating-logo logo1">
-  <img src="images/logo2.png" class="floating-logo logo2">
-  <img src="images/logo3.png" class="floating-logo logo3">
+  <img src="../images/logo1.png" class="floating-logo logo1">
+  <img src="../images/logo2.png" class="floating-logo logo2">
+  <img src="../images/logo3.png" class="floating-logo logo3">
 
   <!-- Coins -->
-  <img src="images/coin2.png" class="coin coin1">
-  <img src="images/coin2.png" class="coin coin2">
-  <img src="images/coin3.png" class="coin coin3">
+  <img src="../images/coin2.png" class="coin coin1">
+  <img src="../images/coin2.png" class="coin coin2">
+  <img src="../images/coin3.png" class="coin coin3">
 </section>
 
 
@@ -93,15 +93,15 @@
       <!-- Smiley above middle -->
         <div class="saving saving-middle">
           <div class="smiley">😊</div>
-          <img src="images/saves.png" alt="Saving">
+          <img src="../images/saves.png" alt="Saving">
           <p>Saving</p>
         </div>
         <!-- Side cards -->
         <div class="saving saving-left">
-          <img src="images/saves.png" alt="Left">
+          <img src="../images/saves.png" alt="Left">
         </div>
         <div class="saving saving-right">
-          <img src="images/saves.png" alt="Right">
+          <img src="../images/saves.png" alt="Right">
         </div>
       </div>
     </div>
@@ -112,17 +112,17 @@
   <div class="card">
     <div class="card icon-card">
   <div class="circle-icons">
-    <div class="circle"><img src="images/tryagain.png" alt="Try Again"></div>
-    <div class="circle"><img src="images/luy.png" alt="Card"></div>
-    <div class="circle"><img src="images/insights.png" alt="Insight"></div>
-    <div class="circle"><img src="images/notifs.png" alt="Notification"></div>
+    <div class="circle"><img src="../images/tryagain.png" alt="Try Again"></div>
+    <div class="circle"><img src="../images/luy.png" alt="Card"></div>
+    <div class="circle"><img src="../images/insights.png" alt="Insight"></div>
+    <div class="circle"><img src="../images/notifs.png" alt="Notification"></div>
   </div>
 </div>
 
 
   </div>
   <div class="card-long">
-    <img src="images/baboon.gif" alt="monkey">
+    <img src="../images/baboon.gif" alt="monkey">
   </div>
 
 
