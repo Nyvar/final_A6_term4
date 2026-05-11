@@ -29,61 +29,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match';
     } else {
-        try {
-            $pdo = getDBConnection();
-            
-            // Check if username exists
-            $stmt = $pdo->prepare("SELECT user_id FROM Users WHERE username = ?");
-            $stmt->execute([$username]);
+        $pdo = getDBConnection();
+        
+        // Check if username exists
+        $stmt = $pdo->prepare("SELECT user_id FROM Users WHERE username = ?");
+        $stmt->execute([$username]);
+        if ($stmt->fetch()) {
+            $error = 'Username already taken';
+        } else {
+            // Check if email exists
+            $stmt = $pdo->prepare("SELECT user_id FROM Users WHERE email = ?");
+            $stmt->execute([$email]);
             if ($stmt->fetch()) {
-                $error = 'Username already taken';
+                $error = 'Email already registered';
             } else {
-                // Check if email exists
-                $stmt = $pdo->prepare("SELECT user_id FROM Users WHERE email = ?");
-                $stmt->execute([$email]);
-                if ($stmt->fetch()) {
-                    $error = 'Email already registered';
+                // Create new user
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)");
+                
+                if ($stmt->execute([$username, $email, $hashed_password])) {
+                    $user_id = $pdo->lastInsertId();
+                    
+                    // Create default currencies for the user
+                    $stmt = $pdo->prepare("INSERT INTO Currency (user_id, currency_code, currency_name, symbol, wallet) VALUES 
+                        (?, 'USD', 'US Dollar', '$', 5000),
+                        (?, 'KHR', 'Cambodian Riel', '៛', 20000000),
+                        (?, 'EUR', 'Euro', '€', 0),
+                        (?, 'GBP', 'British Pound', '£', 0)");
+                    $stmt->execute([$user_id, $user_id, $user_id, $user_id]);
+                    
+                    // Auto login after registration
+                    $_SESSION['user_id'] = $user_id;
+                    $_SESSION['username'] = $username;
+                    $_SESSION['email'] = $email;
+                    header('Location: index.php');
+                    exit;
                 } else {
-                    // Create new user
-                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                    
-                    // OPTION 1: If your column is 'password' (add this column if missing)
-                    $stmt = $pdo->prepare("INSERT INTO Users (username, email, password) VALUES (?, ?, ?)");
-                    
-                    // OPTION 2: If your column is 'user_password' (uncomment below and comment OPTION 1)
-                    // $stmt = $pdo->prepare("INSERT INTO Users (username, email, user_password) VALUES (?, ?, ?)");
-                    
-                    // OPTION 3: If your column is 'passwd' (uncomment below and comment OPTION 1)
-                    // $stmt = $pdo->prepare("INSERT INTO Users (username, email, passwd) VALUES (?, ?, ?)");
-                    
-                    if ($stmt->execute([$username, $email, $hashed_password])) {
-                        $user_id = $pdo->lastInsertId();
-                        
-                        // Create default currencies for the user
-                        $stmt = $pdo->prepare("INSERT INTO Currency (user_id, currency_code, currency_name, symbol, wallet) VALUES 
-                            (?, 'USD', 'US Dollar', '$', 5000),
-                            (?, 'KHR', 'Cambodian Riel', '៛', 20000000),
-                            (?, 'EUR', 'Euro', '€', 0),
-                            (?, 'GBP', 'British Pound', '£', 0)");
-                        $stmt->execute([$user_id, $user_id, $user_id, $user_id]);
-                        
-                        // Auto login after registration
-                        $_SESSION['user_id'] = $user_id;
-                        $_SESSION['username'] = $username;
-                        $_SESSION['email'] = $email;
-                        header('Location: index.php');
-                        exit;
-                    } else {
-                        $error = 'Registration failed. Please try again.';
-                    }
+                    $error = 'Registration failed. Please try again.';
                 }
-            }
-        } catch(PDOException $e) {
-            // Check if the error is about missing column
-            if (strpos($e->getMessage(), 'Unknown column \'password\'') !== false) {
-                $error = 'Database error: Missing password column. Please run this SQL in phpMyAdmin: ALTER TABLE Users ADD COLUMN password VARCHAR(255) NOT NULL;';
-            } else {
-                $error = 'Registration failed: ' . $e->getMessage();
             }
         }
     }
@@ -205,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="register-card">
             <div class="register-logo">
                 <!-- Updated Image Section -->
-                <img src="image/monefy.png" alt="Monefy Logo" class="brand-logo">
+                <img src="monefy.png" alt="Monefy Logo" class="brand-logo">
                 <h1>Create Account</h1>
             </div>
             
