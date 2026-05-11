@@ -1,4 +1,4 @@
-@url = http://localhost:3000/api
+@url = http://localhost/monefy/final_A6_term4/api
 
 ### Create a new user
 POST {{url}}/?action=login HTTP/1.1
