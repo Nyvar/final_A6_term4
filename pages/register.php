@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="register-card">
             <div class="register-logo">
                 <!-- Updated Image Section -->
-                <img src="monefy.png" alt="Monefy Logo" class="brand-logo">
+                <img src="image/monefy.png" alt="Monefy Logo" class="brand-logo">
                 <h1>Create Account</h1>
             </div>
             
