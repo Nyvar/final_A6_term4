@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Luyfy - expense App</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/styleHomepage.css">
 </head>
 <body>
 
@@ -26,7 +26,7 @@
   </nav>
   <div class="header-buttons">
     <a href="#" class="btn">Get the App</a>
-    <a href="#" class="btn login">Login</a>
+    <a href="login.php" class="btn login">Login</a>
   </div>
 </header>
 
