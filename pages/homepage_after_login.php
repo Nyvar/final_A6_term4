@@ -1,10 +1,35 @@
 <?php
-// Main application file - index.php
-require_once '../functions/config.php';
+require_once __DIR__ . '/../functions/config.php';
+
+$fromAppRoot = strpos($_SERVER['SCRIPT_NAME'] ?? '', '/pages/') === false;
+$pagesPrefix = $fromAppRoot ? 'pages/' : '';
+$cssBase = $fromAppRoot ? '' : '../';
+$imagesBase = $fromAppRoot ? 'images/' : '../images/';
+
+if (!function_exists('monefy_home_reload')) {
+    function monefy_home_reload(array $override = []) {
+        global $fromAppRoot, $activeCurrency, $dateFilter, $startDateParam, $endDateParam, $searchQuery;
+        $currency = $override['currency'] ?? $activeCurrency;
+        $df = $override['date_filter'] ?? $dateFilter;
+        $q = ['currency' => $currency, 'date_filter' => $df];
+        $sd = array_key_exists('start_date', $override) ? $override['start_date'] : $startDateParam;
+        $ed = array_key_exists('end_date', $override) ? $override['end_date'] : $endDateParam;
+        if (!empty($sd) && !empty($ed)) {
+            $q['start_date'] = $sd;
+            $q['end_date'] = $ed;
+        }
+        $sq = array_key_exists('search', $override) ? $override['search'] : $searchQuery;
+        if ($sq !== '' && $sq !== null) {
+            $q['search'] = $sq;
+        }
+        $qs = http_build_query($q);
+        return $fromAppRoot ? ('index.php?page=home&' . $qs) : ('homepage_after_login.php?' . $qs);
+    }
+}
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
+    header('Location: ' . ($fromAppRoot ? 'pages/login.php' : 'login.php'));
     exit;
 }
 
@@ -172,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['message'] = ['type' => 'error', 'text' => 'Error: ' . $e->getMessage()];
             }
         }
-        header('Location: ?currency=' . $activeCurrency . '&date_filter=' . $dateFilter . ($startDateParam ? '&start_date=' . $startDateParam . '&end_date=' . $endDateParam : '') . (!empty($searchQuery) ? '&search=' . urlencode($searchQuery) : ''));
+        header('Location: ' . monefy_home_reload());
         exit;
     }
     
@@ -198,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['message'] = ['type' => 'error', 'text' => 'Error: ' . $e->getMessage()];
             }
         }
-        header('Location: ?currency=' . $activeCurrency . '&date_filter=' . $dateFilter . ($startDateParam ? '&start_date=' . $startDateParam . '&end_date=' . $endDateParam : '') . (!empty($searchQuery) ? '&search=' . urlencode($searchQuery) : ''));
+        header('Location: ' . monefy_home_reload());
         exit;
     }
     
@@ -241,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['message'] = ['type' => 'error', 'text' => 'Error: ' . $e->getMessage()];
             }
         }
-        header('Location: ?currency=' . $activeCurrency . '&date_filter=' . $dateFilter . ($startDateParam ? '&start_date=' . $startDateParam . '&end_date=' . $endDateParam : '') . (!empty($searchQuery) ? '&search=' . urlencode($searchQuery) : ''));
+        header('Location: ' . monefy_home_reload());
         exit;
     }
     
@@ -299,14 +324,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['message'] = ['type' => 'error', 'text' => 'Error: ' . $e->getMessage()];
         }
         
-        header('Location: ?currency=' . $activeCurrency . '&date_filter=' . $dateFilter . ($startDateParam ? '&start_date=' . $startDateParam . '&end_date=' . $endDateParam : '') . (!empty($searchQuery) ? '&search=' . urlencode($searchQuery) : ''));
+        header('Location: ' . monefy_home_reload());
         exit;
     }
     
     if ($action === 'change_currency') {
         $newCurrency = $_POST['currency_code'] ?? 'USD';
         $_SESSION['active_currency'] = $newCurrency;
-        header('Location: ?currency=' . $newCurrency . '&date_filter=' . $dateFilter . ($startDateParam ? '&start_date=' . $startDateParam . '&end_date=' . $endDateParam : '') . (!empty($searchQuery) ? '&search=' . urlencode($searchQuery) : ''));
+        header('Location: ' . monefy_home_reload(['currency' => $newCurrency]));
         exit;
     }
 }
@@ -314,14 +339,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $message = $_SESSION['message'] ?? null;
 unset($_SESSION['message']);
 $monthName = date('F Y');
+$displayUsername = htmlspecialchars($_SESSION['username'] ?? 'user_name', ENT_QUOTES, 'UTF-8');
+$headerDateLine = date('M') . ', ' . date('d') . ', ' . date('Y');
+/* Orbit: up to 12 unique categories, alternating expense / income for balance */
+$orbitMax = 12;
+$orbitItems = [];
+$orbitSeenIds = [];
+$exi = 0;
+$ini = 0;
+while (count($orbitItems) < $orbitMax) {
+    $orbitCountBefore = count($orbitItems);
+    while ($exi < count($expenseCategories)) {
+        $c = $expenseCategories[$exi++];
+        $cid = (int) ($c['category_id'] ?? 0);
+        if ($cid && !isset($orbitSeenIds[$cid])) {
+            $orbitSeenIds[$cid] = true;
+            $orbitItems[] = ['kind' => 'category', 'record_type' => 'expense', 'cat' => $c];
+            break;
+        }
+    }
+    if (count($orbitItems) >= $orbitMax) {
+        break;
+    }
+    while ($ini < count($incomeCategories)) {
+        $c = $incomeCategories[$ini++];
+        $cid = (int) ($c['category_id'] ?? 0);
+        if ($cid && !isset($orbitSeenIds[$cid])) {
+            $orbitSeenIds[$cid] = true;
+            $orbitItems[] = ['kind' => 'category', 'record_type' => 'income', 'cat' => $c];
+            break;
+        }
+    }
+    if (count($orbitItems) === $orbitCountBefore) {
+        break;
+    }
+}
+$orbitCount = count($orbitItems);
+$orbitStepDeg = $orbitCount > 0 ? (360 / $orbitCount) : 30;
+for ($oi = 0; $oi < $orbitCount; $oi++) {
+    $orbitItems[$oi]['angle'] = $oi * $orbitStepDeg;
+}
+$orbitDenseClass = ($orbitCount >= 8) ? ' orbit-stage--dense' : '';
+$categoryIconPaths = [
+    'Groceries' => '<path d="M3 6h18v12H3z"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/>',
+    'Housing' => '<rect x="4" y="8" width="16" height="12"/><polygon points="2 8 12 2 22 8"/>',
+    'Car' => '<rect x="4" y="12" width="16" height="8"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/>',
+    'Dining' => '<path d="M8 3v3a4 4 0 0 0 8 0V3"/><path d="M12 12v8"/><path d="M5 21h14"/>',
+    'Transit' => '<path d="M3 12h18M3 6h18M3 18h18M8 6v12M16 6v12"/><rect x="6" y="4" width="12" height="16" rx="1"/>',
+    'Hygiene' => '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    'Entertainment' => '<circle cx="12" cy="12" r="10"/><path d="M9 12h6"/><path d="M12 9v6"/>',
+    'Sports' => '<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
+    'Taxi' => '<rect x="4" y="12" width="16" height="8"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/>',
+    'Health' => '<path d="M4 8h16"/><path d="M12 2v20"/><rect x="2" y="8" width="20" height="12" rx="2"/>',
+    'Clothing' => '<rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3"/>',
+    'Phone' => '<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+    'Gifts' => '<polygon points="12 2 15 7 21 8 16 13 17 19 12 16 7 19 8 13 3 8 9 7 12 2"/>',
+    'Pets' => '<circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/>',
+    'Salary' => '<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    'Bonus' => '<circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/>',
+    'Investment' => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+    'Freelance' => '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4"/>',
+];
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="wallet-page-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Monefy - Personal Finance Tracker</title>
-    <link rel="stylesheet" href="../css/styleAfterLogin.css">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($cssBase); ?>css/styleAfterLogin.css">
     <style>
         /* Search Modal Styles */
         .search-modal {
@@ -415,171 +501,108 @@ $monthName = date('F Y');
         }
     </style>
 </head>
-<body>
-    <div class="app-container">
-        <!-- Top Navigation Bar -->
-        <div class="topbar">
-            <div class="topbar-left" onclick="toggleDropdown()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-                </svg>
-                <div>
-                    <div class="topbar-title">Monefy</div>
-                    <div class="topbar-sub">All accounts · <?php echo htmlspecialchars($activeCurrency); ?></div>
+<body class="wallet-page">
+    <div class="app-container app-container--wallet">
+        <header class="topbar topbar--wallet">
+            <div class="topbar-row topbar-row--main">
+                <div class="topbar-left-block">
+                    <button type="button" class="icon-btn topbar-left-menu-trigger" aria-label="Accounts" onclick="event.stopPropagation(); toggleLeftDrawer();">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="topbar-user" onclick="toggleLeftDrawer()" role="button" tabindex="0">
+                        <div class="topbar-user-name"><?php echo $displayUsername; ?></div>
+                        <div class="topbar-user-currency"><?php echo htmlspecialchars($currencySymbol . ' · ' . $activeCurrency); ?></div>
+                    </div>
                 </div>
-                <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                    <polyline points="6 9 12 15 18 9"/>
-                </svg>
+                <div class="topbar-right-block">
+                    <div class="topbar-icons-row">
+                        <button type="button" class="icon-btn topbar-search-trigger" aria-label="Search" onclick="event.stopPropagation(); openSearchModal();">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </button>
+                        <button type="button" class="icon-btn topbar-transfer-trigger" aria-label="Transfer" onclick="event.stopPropagation(); openTransferModal();">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                        </button>
+                        <button type="button" class="icon-btn topbar-right-menu-trigger" aria-label="Menu" onclick="event.stopPropagation(); toggleRightNavDropdown();">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="topbar-date-row" onclick="openDateRangeModal()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <span><?php echo htmlspecialchars($headerDateLine); ?></span>
+                    </div>
+                </div>
             </div>
-            <div class="topbar-icons">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="openSearchModal()">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="openTransferModal()">
-                    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-                </svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" onclick="openSidebar()">
-                    <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-                </svg>
-            </div>
-        </div>
+        </header>
 
-        <!-- Dropdown Menu -->
-        <div class="dropdown-menu" id="dropdownMenu">
-            <div class="dropdown-item" onclick="changeCurrency('USD')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="4" y1="4" x2="20" y2="20"/>
-                </svg>
-                <span>USD ($)</span>
-                <?php if ($activeCurrency === 'USD'): ?>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <?php endif; ?>
+        <div class="left-drawer-backdrop" id="leftDrawerBackdrop" onclick="closeLeftDrawer()"></div>
+        <aside class="left-drawer" id="leftDrawer" aria-hidden="true">
+            <div class="left-drawer-header">
+                <span>Accounts</span>
+                <button type="button" class="left-drawer-close icon-btn" aria-label="Close" onclick="closeLeftDrawer()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
-            <div class="dropdown-item" onclick="changeCurrency('KHR')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="4" y1="4" x2="20" y2="20"/>
-                </svg>
-                <span>KHR (៛)</span>
-                <?php if ($activeCurrency === 'KHR'): ?>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <?php endif; ?>
-            </div>
-            <div class="dropdown-item" onclick="changeCurrency('EUR')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="4" y1="4" x2="20" y2="20"/>
-                </svg>
-                <span>EUR (€)</span>
-                <?php if ($activeCurrency === 'EUR'): ?>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <?php endif; ?>
-            </div>
-            <div class="dropdown-item" onclick="changeCurrency('GBP')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="4" y1="4" x2="20" y2="20"/>
-                </svg>
-                <span>GBP (£)</span>
-                <?php if ($activeCurrency === 'GBP'): ?>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <?php endif; ?>
-            </div>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-item" onclick="openTransferModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="17 1 21 5 17 9"/>
-                    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-                </svg>
-                <span>Transfer Money</span>
-            </div>
-            <div class="dropdown-item" onclick="openHistory()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                </svg>
-                <span>Transaction History</span>
-            </div>
-            <div class="dropdown-item" onclick="showTransit()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 12h18M3 6h18M3 18h18M8 6v12M16 6v12"/>
-                    <rect x="6" y="4" width="12" height="16" rx="1"/>
-                </svg>
-                <span>Transit</span>
-            </div>
-        </div>
+            <div class="left-drawer-section-title">Currency</div>
+            <div class="left-drawer-item" onclick="changeCurrency('USD'); closeLeftDrawer();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4" y1="4" x2="20" y2="20"/></svg><span>USD ($)</span></div>
+            <div class="left-drawer-item" onclick="changeCurrency('KHR'); closeLeftDrawer();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4" y1="4" x2="20" y2="20"/></svg><span>KHR (៛)</span></div>
+            <div class="left-drawer-item" onclick="changeCurrency('EUR'); closeLeftDrawer();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4" y1="4" x2="20" y2="20"/></svg><span>EUR (€)</span></div>
+            <div class="left-drawer-item" onclick="changeCurrency('GBP'); closeLeftDrawer();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4" y1="4" x2="20" y2="20"/></svg><span>GBP (£)</span></div>
+            <div class="left-drawer-section-title">Actions</div>
+            <div class="left-drawer-item" onclick="openTransferModal(); closeLeftDrawer();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg><span>Transfer money</span></div>
+            <div class="left-drawer-item" onclick="openHistory(); closeLeftDrawer();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Transaction history</span></div>
+            <div class="left-drawer-item" onclick="showTransit();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18M8 6v12M16 6v12"/><rect x="6" y="4" width="12" height="16" rx="1"/></svg><span>Transit</span></div>
+        </aside>
 
-        <!-- Right Sidebar Navigation -->
-        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-        <div class="right-sidebar" id="rightSidebar">
-            <div class="sidebar-header">
-                <h3>Menu</h3>
-                <button class="close-sidebar" onclick="closeSidebar()">&times;</button>
+        <div class="right-nav-backdrop" id="rightNavBackdrop" onclick="closeRightNavDropdown()"></div>
+        <nav class="right-nav-dropdown" id="rightNavDropdown" aria-hidden="true">
+            <div class="right-nav-dropdown-arrow" aria-hidden="true"></div>
+            <div class="right-nav-dropdown-header">
+                <span>Menu</span>
+                <button type="button" class="icon-btn right-nav-close" aria-label="Close menu" onclick="closeRightNavDropdown()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
             </div>
-            <div class="sidebar-items">
-                <div class="sidebar-item" onclick="location.href='categories.php'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"/>
-                        <rect x="14" y="3" width="7" height="7"/>
-                        <rect x="14" y="14" width="7" height="7"/>
-                        <rect x="3" y="14" width="7" height="7"/>
-                    </svg>
+            <div class="right-nav-dropdown-body">
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>add_expense.php'; closeRightNavDropdown();">
+                    <img src="<?php echo htmlspecialchars($imagesBase); ?>icon-add-expense.svg" alt="" class="right-nav-item-img" width="28" height="28"/>
+                    <span>Add expense</span>
+                </div>
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>add_income.php'; closeRightNavDropdown();">
+                    <img src="<?php echo htmlspecialchars($imagesBase); ?>icon-add-income.svg" alt="" class="right-nav-item-img" width="28" height="28"/>
+                    <span>Add income</span>
+                </div>
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>categories.php'; closeRightNavDropdown();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                     <span>Categories</span>
                 </div>
-                <div class="sidebar-item" onclick="location.href='account.php'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="2" y="7" width="20" height="14" rx="2"/>
-                        <line x1="16" y1="21" x2="16" y2="17"/>
-                        <line x1="8" y1="21" x2="8" y2="17"/>
-                    </svg>
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>account.php'; closeRightNavDropdown();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><line x1="16" y1="21" x2="16" y2="17"/><line x1="8" y1="21" x2="8" y2="17"/></svg>
                     <span>Account</span>
                 </div>
-                <div class="sidebar-item" onclick="location.href='currencies.php'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M4 4l16 16"/>
-                    </svg>
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>currencies.php'; closeRightNavDropdown();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M4 4l16 16"/></svg>
                     <span>Currencies</span>
                 </div>
-                <div class="sidebar-item" onclick="location.href='settings.php'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>settings.php'; closeRightNavDropdown();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     <span>Settings</span>
                 </div>
-                <div class="sidebar-item" onclick="location.href='guides.php'">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
-                    </svg>
-                    <span>Guides & Help</span>
+                <div class="right-nav-item" onclick="location.href='<?php echo $pagesPrefix; ?>guides.php'; closeRightNavDropdown();">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span>Guides &amp; Help</span>
                 </div>
-                <div class="sidebar-item" onclick="location.href='logout.php'" style="border-top: 1px solid var(--border-color); margin-top: 10px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                        <polyline points="16 17 21 12 16 7"/>
-                        <line x1="21" y1="12" x2="9" y2="12"/>
-                    </svg>
+                <div class="right-nav-item right-nav-item--danger" onclick="location.href='<?php echo $pagesPrefix; ?>logout.php'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     <span>Logout</span>
                 </div>
             </div>
-        </div>
+        </nav>
 
-        <!-- Date Filter Bar -->
-        <div class="date-filter-bar">
+        <div class="date-filter-bar date-filter-bar--compact period-toolbar">
+            <button type="button" class="toolbar-search-chip" onclick="openSearchModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search</span>
+            </button>
             <div class="filter-buttons">
                 <button class="filter-btn <?php echo ($dateFilter == 'day' ? 'active' : ''); ?>" onclick="setDateFilter('day')">Day</button>
                 <button class="filter-btn <?php echo ($dateFilter == 'week' ? 'active' : ''); ?>" onclick="setDateFilter('week')">Week</button>
@@ -589,163 +612,72 @@ $monthName = date('F Y');
                 <button class="filter-btn <?php echo ($dateFilter == 'interval' ? 'active' : ''); ?>" onclick="openDateRangeModal()">Interval</button>
             </div>
             <div class="date-picker-wrapper" onclick="openDateRangeModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span id="selectedDateRange"><?php echo htmlspecialchars($dateRangeText); ?></span>
             </div>
             <?php if (!empty($searchQuery)): ?>
-            <div class="search-active-badge" onclick="clearSearch()">
-                🔍 "<?php echo htmlspecialchars($searchQuery); ?>" 
-                <span style="cursor:pointer;">&times;</span>
-            </div>
+            <div class="search-active-badge" onclick="clearSearch()">🔍 "<?php echo htmlspecialchars($searchQuery); ?>" <span style="cursor:pointer;">&times;</span></div>
             <?php endif; ?>
         </div>
 
-        <!-- Dashboard Layout - Two Columns for Web -->
-        <div class="dashboard-layout">
-            <div class="left-panel">
-                <!-- Donut Chart -->
-                <div class="donut-container">
-                    <div class="donut-wrapper">
-                        <svg viewBox="0 0 240 240">
-                            <circle cx="120" cy="120" r="100" fill="none" stroke="#e0e0e0" stroke-width="38"/>
-                            <circle cx="120" cy="120" r="100" fill="none" stroke="#6dbf8c" stroke-width="38"
-                                stroke-dasharray="<?php 
-                                    $total = $totalIncome + $totalExpense;
-                                    $circ = 2 * M_PI * 100;
-                                    $incLen = $total > 0 ? ($totalIncome / $total) * $circ : 0;
-                                    echo $incLen . ' ' . ($circ - $incLen);
-                                ?>" stroke-linecap="round" 
-                                stroke-dashoffset="-<?php echo $circ * 0.25; ?>"
-                                transform="rotate(-90 120 120)"/>
-                            <circle cx="120" cy="120" r="100" fill="none" stroke="#e07070" stroke-width="38"
-                                stroke-dasharray="<?php 
-                                    $expLen = $total > 0 ? ($totalExpense / $total) * $circ : 0;
-                                    echo $expLen . ' ' . ($circ - $expLen);
-                                ?>" stroke-linecap="round"
-                                stroke-dashoffset="-<?php echo $circ * 0.25 + $incLen; ?>"
-                                transform="rotate(-90 120 120)"/>
-                        </svg>
-                        <div class="donut-center">
-                            <div class="donut-income"><?php echo formatCurrency($totalIncome, $activeCurrency); ?></div>
-                            <div class="donut-expense"><?php echo formatCurrency($totalExpense, $activeCurrency); ?></div>
-                            
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Expense by Category -->
-                <?php if (!empty($expenseByCategory)): ?>
-                <div class="category-breakdown">
-                    <div class="breakdown-title">Top Expenses</div>
-                    <?php foreach ($expenseByCategory as $cat): ?>
-                    <div class="breakdown-item">
-                        <span class="breakdown-label"><?php echo htmlspecialchars($cat['category_name']); ?></span>
-                        <div class="breakdown-bar-container">
-                            <div class="breakdown-bar" style="width: <?php echo ($cat['total'] / max($totalExpense, 1)) * 100; ?>%; background-color: <?php echo $cat['color']; ?>;"></div>
-                        </div>
-                        <span class="breakdown-amount"><?php echo formatCurrency($cat['total'], $activeCurrency); ?></span>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <?php endif; ?>
-            </div>
-
-            <div class="right-panel">
-                <!-- Calculator Display -->
-                <div class="calc-display">
-                    <div class="calc-amount">
-                        <span id="calcValue">0</span>
-                        <small><?php echo htmlspecialchars($activeCurrency); ?></small>
-                    </div>
-                </div>
-
-          
-                <div class="categories">
-                    <?php 
-                    $displayCategories = array_slice($expenseCategories, 0, 12);
-                    foreach ($displayCategories as $cat): 
-                    ?>
-                    <div class="cat-icon" onclick="openExpenseModal(<?php echo $cat['category_id']; ?>, '<?php echo htmlspecialchars($cat['category_name']); ?>')">
-                        <div class="cat-icon-circle" style="background-color: <?php echo $cat['color']; ?>20; border-color: <?php echo $cat['color']; ?>;">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="<?php echo $cat['color']; ?>" stroke-width="2">
-                                <?php 
-                                $icons = [
-                                    'Groceries' => '<path d="M3 6h18v12H3z"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/>',
-                                    'Housing' => '<rect x="4" y="8" width="16" height="12"/><polygon points="2 8 12 2 22 8"/>',
-                                    'Car' => '<rect x="4" y="12" width="16" height="8"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/>',
-                                    'Dining' => '<path d="M8 3v3a4 4 0 0 0 8 0V3"/><path d="M12 12v8"/><path d="M5 21h14"/>',
-                                    'Transit' => '<path d="M3 12h18M3 6h18M3 18h18M8 6v12M16 6v12"/><rect x="6" y="4" width="12" height="16" rx="1"/>',
-                                    'Hygiene' => '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
-                                    'Entertainment' => '<circle cx="12" cy="12" r="10"/><path d="M9 12h6"/><path d="M12 9v6"/>',
-                                    'Sports' => '<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
-                                    'Taxi' => '<rect x="4" y="12" width="16" height="8"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/>',
-                                    'Health' => '<path d="M4 8h16"/><path d="M12 2v20"/><rect x="2" y="8" width="20" height="12" rx="2"/>',
-                                    'Clothing' => '<rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V4h6v3"/>',
-                                    'Phone' => '<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
-                                    'Gifts' => '<polygon points="12 2 15 7 21 8 16 13 17 19 12 16 7 19 8 13 3 8 9 7 12 2"/>',
-                                    'Pets' => '<circle cx="12" cy="12" r="10"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/>'
-                                ];
-                                $iconPath = $icons[$cat['category_name']] ?? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
-                                echo $iconPath;
-                                ?>
-                            </svg>
-                        </div>
-                        <span><?php echo htmlspecialchars($cat['category_name']); ?></span>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <!-- Calculator Keypad -->
-                <div class="calc-keypad">
-                    <button class="key" onclick="calculatorInput('7')">7</button>
-                    <button class="key" onclick="calculatorInput('8')">8</button>
-                    <button class="key" onclick="calculatorInput('9')">9</button>
-                    <button class="key key-operator" onclick="calculatorInput('+')">+</button>
-                    <button class="key" onclick="calculatorInput('4')">4</button>
-                    <button class="key" onclick="calculatorInput('5')">5</button>
-                    <button class="key" onclick="calculatorInput('6')">6</button>
-                    <button class="key key-operator" onclick="calculatorInput('-')">-</button>
-                    <button class="key" onclick="calculatorInput('1')">1</button>
-                    <button class="key" onclick="calculatorInput('2')">2</button>
-                    <button class="key" onclick="calculatorInput('3')">3</button>
-                    <button class="key key-operator" onclick="calculatorInput('*')">×</button>
-                    <button class="key" onclick="calculatorInput('0')">0</button>
-                    <button class="key" onclick="calculatorInput('.')">.</button>
-                    <button class="key key-clear" onclick="calculatorClear()">C</button>
-                    <button class="key key-operator" onclick="calculatorInput('/')">÷</button>
+        <main class="wallet-main">
+            <h1 class="wallet-main-title">Your current wallet</h1>
+            <div class="orbit-stage orbit-stage--radial<?php echo $orbitDenseClass; ?>">
+                <?php foreach ($orbitItems as $idx => $item):
+                    $oc = $item['cat'] ?? null;
+                    if (!$oc) {
+                        continue;
+                    }
+                    $ang = (float) $item['angle'];
+                    $rt = $item['record_type'] ?? 'expense';
+                    echo '<div class="orbit-node" style="--orbit-angle: ' . $ang . 'deg;"><div class="orbit-node-inner">';
+                        $cid = (int) $oc['category_id'];
+                        $cnameJson = json_encode($oc['category_name'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+                        $strokeCol = htmlspecialchars($oc['color'] ?? '#1a1a1a', ENT_QUOTES, 'UTF-8');
+                        $iconSvg = $categoryIconPaths[$oc['category_name']] ?? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+                        if ($rt === 'income') {
+                            echo '<a class="orbit-node-btn orbit-node-btn--action orbit-node-btn--category orbit-node-btn--income-cat" href="' . $pagesPrefix . 'add_income.php?category=' . rawurlencode($oc['category_name']) . '" title="Add income: ' . htmlspecialchars($oc['category_name'], ENT_QUOTES, 'UTF-8') . '">';
+                        } else {
+                            echo '<a class="orbit-node-btn orbit-node-btn--action orbit-node-btn--category orbit-node-btn--expense-cat" href="' . $pagesPrefix . 'add_expense.php?category_id=' . $cid . '" title="Add expense: ' . htmlspecialchars($oc['category_name'], ENT_QUOTES, 'UTF-8') . '">';
+                        }
+                        echo '<svg viewBox="0 0 24 24" fill="none" stroke="' . $strokeCol . '" stroke-width="2">' . $iconSvg . '</svg>';
+                        echo '<span class="orbit-node-label">' . htmlspecialchars($oc['category_name']) . '</span></a>';
+                    echo '</div></div>';
+                endforeach; ?>
+                <div class="orbit-center-ring">
+                    <svg viewBox="0 0 240 240" aria-hidden="true">
+                        <circle cx="120" cy="120" r="103" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+                        <circle cx="120" cy="120" r="100" fill="none" stroke="#ffffff" stroke-width="34"/>
+                    </svg>
+                    <div class="orbit-center-label"><?php echo htmlspecialchars(formatCurrency($balance, $activeCurrency)); ?></div>
                 </div>
             </div>
-        </div>
+            <?php if (!empty($expenseByCategory)): ?>
+            <div class="category-breakdown">
+                <div class="breakdown-title">Top expenses (period)</div>
+                <?php foreach ($expenseByCategory as $cat): ?>
+                <div class="breakdown-item">
+                    <span class="breakdown-label"><?php echo htmlspecialchars($cat['category_name']); ?></span>
+                    <div class="breakdown-bar-container">
+                        <div class="breakdown-bar" style="width: <?php echo ($cat['total'] / max($totalExpense, 1)) * 100; ?>%; background-color: <?php echo htmlspecialchars($cat['color']); ?>;"></div>
+                    </div>
+                    <span class="breakdown-amount"><?php echo htmlspecialchars(formatCurrency($cat['total'], $activeCurrency)); ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+        </main>
 
-        <!-- Bottom Balance Bar -->
-        <div class="bottom-bar" onclick="openExpenseModal()">
+        <div class="bottom-bar" onclick="window.location.href='<?php echo $pagesPrefix; ?>add_expense.php'">
             <div class="balance-area">
                 <span class="balance-label">Balance</span>
                 <span class="balance-amount"><?php echo formatCurrency($balance, $activeCurrency); ?></span>
             </div>
-            <div class="menu-icon" onclick="event.stopPropagation(); openSidebar()">
-                <span></span><span></span><span></span>
-            </div>
+            <div class="menu-icon" onclick="event.stopPropagation(); toggleRightNavDropdown();"><span></span><span></span><span></span></div>
         </div>
-
-        <!-- Bottom Action Buttons -->
         <div class="bottom-btns">
-            <div class="btn-circle btn-expense" onclick="openExpenseModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-            </div>
-            <div class="btn-circle btn-income" onclick="openIncomeModal()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-            </div>
+            <div class="btn-circle btn-expense" onclick="window.location.href='<?php echo $pagesPrefix; ?>add_expense.php'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+            <div class="btn-circle btn-income" onclick="window.location.href='<?php echo $pagesPrefix; ?>add_income.php'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
         </div>
     </div>
 
@@ -763,8 +695,32 @@ $monthName = date('F Y');
         </div>
     </div>
     <div class="modal-overlay" id="expenseModal" onclick="closeModal('expenseModal')">
-        <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal modal--with-calculator" onclick="event.stopPropagation()">
             <h3>Add Expense</h3>
+            <div class="modal-calc-wrap" aria-label="Calculator">
+                <div class="modal-calc-display">
+                    <span id="expenseModalCalcValue">0</span><small><?php echo htmlspecialchars($activeCurrency); ?></small>
+                </div>
+                <div class="modal-calc-keypad">
+                    <button type="button" class="key" onclick="modalCalcInput('expense','7')">7</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','8')">8</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','9')">9</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('expense','+')">+</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','4')">4</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','5')">5</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','6')">6</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('expense','-')">-</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','1')">1</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','2')">2</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','3')">3</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('expense','*')">×</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','0')">0</button>
+                    <button type="button" class="key" onclick="modalCalcInput('expense','.')">.</button>
+                    <button type="button" class="key key-clear" onclick="modalCalcClear('expense')">C</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('expense','/')">÷</button>
+                    <button type="button" class="key key-equals key-equals-wide" onclick="modalCalcEquals('expense')">=</button>
+                </div>
+            </div>
             <div class="category-grid" id="expenseCategoryGrid">
                 <?php foreach ($expenseCategories as $cat): ?>
                 <div class="category-option" data-cat-id="<?php echo $cat['category_id']; ?>" data-cat-name="<?php echo htmlspecialchars($cat['category_name']); ?>" onclick="selectCategory(this)">
@@ -813,8 +769,32 @@ $monthName = date('F Y');
 
     <!-- Income Modal -->
     <div class="modal-overlay" id="incomeModal" onclick="closeModal('incomeModal')">
-        <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal modal--with-calculator" onclick="event.stopPropagation()">
             <h3>Add Income</h3>
+            <div class="modal-calc-wrap" aria-label="Calculator">
+                <div class="modal-calc-display">
+                    <span id="incomeModalCalcValue">0</span><small><?php echo htmlspecialchars($activeCurrency); ?></small>
+                </div>
+                <div class="modal-calc-keypad">
+                    <button type="button" class="key" onclick="modalCalcInput('income','7')">7</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','8')">8</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','9')">9</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('income','+')">+</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','4')">4</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','5')">5</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','6')">6</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('income','-')">-</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','1')">1</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','2')">2</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','3')">3</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('income','*')">×</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','0')">0</button>
+                    <button type="button" class="key" onclick="modalCalcInput('income','.')">.</button>
+                    <button type="button" class="key key-clear" onclick="modalCalcClear('income')">C</button>
+                    <button type="button" class="key key-operator" onclick="modalCalcInput('income','/')">÷</button>
+                    <button type="button" class="key key-equals key-equals-wide" onclick="modalCalcEquals('income')">=</button>
+                </div>
+            </div>
             <input type="number" id="incomeAmount" class="modal-input" placeholder="Amount" step="0.01" value="0">
             <input type="text" id="incomeNote" class="modal-input" placeholder="Note (optional)">
             <div class="modal-btns">
@@ -951,7 +931,7 @@ $monthName = date('F Y');
     <div class="message <?php echo $message['type']; ?>"><?php echo htmlspecialchars($message['text']); ?></div>
     <?php endif; ?>
 
-    <script src="script.js"></script>
+    <script src="<?php echo htmlspecialchars($cssBase); ?>js/responsive.js"></script>
     <script>
         const activeCurrency = '<?php echo $activeCurrency; ?>';
         const exchangeRates = <?php echo json_encode($exchange_rates); ?>;
@@ -961,6 +941,8 @@ $monthName = date('F Y');
         
         // Search functionality
         function openSearchModal() {
+            if (typeof closeRightNavDropdown === 'function') closeRightNavDropdown();
+            if (typeof closeLeftDrawer === 'function') closeLeftDrawer();
             document.getElementById('searchModal').classList.add('open');
             document.getElementById('searchInput').value = '';
             document.getElementById('searchInput').focus();

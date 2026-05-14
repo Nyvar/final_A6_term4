@@ -168,7 +168,7 @@ $categories = $stmt->fetchAll();
             </div>
         </div>
         
-        <a href="index.php" class="back-btn">Back</a>
+        <a href="homepage_after_login.php" class="back-btn">Back</a>
     </div>
     
     <div class="modal-overlay" id="addModal">
@@ -398,7 +398,7 @@ $currencies = $stmt->fetchAll();
             </div>
         <?php endforeach; ?>
         
-        <a href="index.php" class="back-btn">Back</a>
+        <a href="homepage_after_login.php" class="back-btn">Back</a>
     </div>
     
     <!-- Include Sidebar -->
@@ -630,7 +630,7 @@ requireLogin();
             </div>
         </div>
         
-        <a href="index.php" class="back-btn">Back</a>
+        <a href="homepage_after_login.php" class="back-btn">Back</a>
     </div>
     
     <!-- Include Sidebar -->
@@ -835,7 +835,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
         
-        <a href="index.php" class="back-btn">Back</a>
+        <a href="homepage_after_login.php" class="back-btn">Back</a>
     </div>
     
     <!-- Include Sidebar -->

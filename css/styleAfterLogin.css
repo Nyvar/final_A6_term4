@@ -602,6 +602,62 @@ body {
     color: white;
 }
 
+.calc-keypad .key-equals-wide {
+    grid-column: 1 / -1;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+/* Calculator inside add expense / add income modals */
+.modal--with-calculator {
+    max-height: min(92vh, 900px);
+    overflow-y: auto;
+}
+
+.modal-calc-wrap {
+    margin-bottom: 14px;
+}
+
+.modal-calc-display {
+    background: var(--gray-bg);
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    text-align: right;
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: 0.02em;
+}
+
+.modal-calc-display small {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-mid);
+    margin-left: 8px;
+}
+
+.modal-calc-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    background: var(--white);
+    border-radius: 20px;
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.modal-calc-keypad .key {
+    min-height: 44px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.modal-calc-keypad .key-equals-wide {
+    grid-column: 1 / -1;
+    border-radius: 16px;
+}
+
 .key-clear {
     background: var(--red-light);
     color: var(--red);
@@ -1246,4 +1302,642 @@ body {
 
 .btn-circle:active {
     animation: pulse 0.2s ease;
+}
+
+/* ----- Wallet / Monefy dashboard (index.php?page=home) ----- */
+:root {
+    --topbar-mid: #4a9468;
+    --topbar-mid-deep: #3d7d57;
+    --mint-bg: #d4f0e0;
+    --mint-bg-deep: #bfe5d0;
+    --right-nav-panel: #4a9468;
+}
+
+html.wallet-page-root {
+    height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+html.wallet-page-root body.wallet-page {
+    min-height: 100%;
+    min-height: 100dvh;
+    margin: 0;
+    background: var(--mint-bg);
+    display: flex;
+    flex-direction: column;
+}
+
+.app-container.app-container--wallet {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.topbar--wallet {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px 12px;
+    background: linear-gradient(180deg, var(--topbar-mid) 0%, var(--topbar-mid-deep) 100%);
+    border-radius: 0;
+    color: #fff;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+}
+
+.topbar-row--main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.topbar-left-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.topbar-user {
+    cursor: pointer;
+    min-width: 0;
+}
+
+.topbar-user-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.topbar-user-currency {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.92);
+    margin-top: 2px;
+}
+
+.topbar-right-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.topbar-icons-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.topbar-icons-row .icon-btn {
+    border-radius: 10px;
+}
+
+.topbar-icons-row .icon-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    color: #fff;
+    opacity: 0.95;
+}
+
+.topbar-icons-row .icon-btn:hover svg {
+    opacity: 1;
+}
+
+.topbar-date-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.95);
+    cursor: pointer;
+    user-select: none;
+}
+
+.topbar-date-row svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+}
+
+.left-drawer-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 150;
+}
+
+.left-drawer-backdrop.open {
+    display: block;
+}
+
+.left-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(300px, 88vw);
+    height: 100vh;
+    background: var(--white);
+    z-index: 160;
+    transform: translateX(-100%);
+    transition: transform 0.28s ease;
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.left-drawer.open {
+    transform: translateX(0);
+}
+
+.left-drawer-header {
+    padding: 18px 14px 16px;
+    background: var(--topbar-mid-deep);
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.left-drawer-close {
+    color: #fff !important;
+}
+
+.left-drawer-close svg {
+    width: 22px;
+    height: 22px;
+}
+
+.left-drawer-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-mid);
+    padding: 14px 18px 6px;
+}
+
+.left-drawer-item {
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
+
+.left-drawer-item:hover {
+    background: var(--green-light);
+}
+
+.left-drawer-item svg {
+    width: 20px;
+    height: 20px;
+    color: var(--green);
+    flex-shrink: 0;
+}
+
+.right-nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 170;
+}
+
+.right-nav-backdrop.open {
+    display: block;
+}
+
+.right-nav-dropdown {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(260px, 82vw);
+    height: 100vh;
+    background: var(--right-nav-panel);
+    z-index: 180;
+    box-shadow: -6px 0 20px rgba(0, 0, 0, 0.18);
+    flex-direction: column;
+    padding-top: 52px;
+}
+
+.right-nav-dropdown.open {
+    display: flex;
+}
+
+.right-nav-dropdown-arrow {
+    position: absolute;
+    top: 48px;
+    right: 18px;
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 11px solid var(--right-nav-panel);
+    transform: translateY(-100%);
+}
+
+.right-nav-dropdown-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 17px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.right-nav-close {
+    color: #fff !important;
+}
+
+.right-nav-dropdown-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px 0 24px;
+}
+
+.right-nav-item {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.right-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.right-nav-item svg {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+}
+
+.right-nav-item-img {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.right-nav-item span {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.right-nav-item {
+    padding: 16px 18px;
+    margin: 0 14px 10px;
+    border-radius: 16px;
+    border-bottom: none;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.right-nav-item:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.right-nav-item--danger {
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.right-nav-dropdown-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    padding: 48px 0 24px;
+}
+
+.period-toolbar {
+    background: linear-gradient(180deg, var(--mint-bg) 0%, var(--mint-bg-deep) 100%);
+    border-bottom: 1px solid rgba(74, 148, 104, 0.15);
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.toolbar-search-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(74, 148, 104, 0.35);
+    background: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.toolbar-search-chip svg {
+    stroke: var(--topbar-mid);
+    color: var(--topbar-mid);
+}
+
+.wallet-main {
+    background: var(--mint-bg);
+    padding: 20px 16px 24px;
+    border-left: none;
+    border-right: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.wallet-main-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.orbit-stage {
+    position: relative;
+    margin: 12px auto 0;
+    overflow: visible;
+}
+
+/* Full circle: square stage, one center, equal 360° spacing (angles from PHP) */
+.orbit-stage.orbit-stage--radial {
+    box-sizing: border-box;
+    width: min(88vw, 400px);
+    max-width: 400px;
+    aspect-ratio: 1;
+    height: auto;
+    max-height: none;
+    flex-shrink: 0;
+    --orbit-satellite-inset: 42px;
+    --orbit-radius: calc(min(88vw, 400px) / 2 - var(--orbit-satellite-inset));
+}
+
+html.wallet-page-root .orbit-stage.orbit-stage--radial {
+    --orbit-shelf: min(90vw, min(88vmin, 500px));
+    width: var(--orbit-shelf);
+    max-width: 500px;
+    --orbit-radius: calc(var(--orbit-shelf) / 2 - var(--orbit-satellite-inset));
+}
+
+/* Twelve satellites: slightly smaller controls + inset so the ring stays balanced */
+.orbit-stage.orbit-stage--radial.orbit-stage--dense {
+    --orbit-satellite-inset: 36px;
+    --orbit-radius: calc(min(88vw, 400px) / 2 - var(--orbit-satellite-inset));
+}
+
+html.wallet-page-root .orbit-stage.orbit-stage--radial.orbit-stage--dense {
+    --orbit-radius: calc(var(--orbit-shelf) / 2 - var(--orbit-satellite-inset));
+}
+
+.orbit-stage--dense .orbit-node-btn,
+.orbit-stage--dense .orbit-node-placeholder {
+    width: 54px;
+    height: 54px;
+    padding: 2px 1px;
+    gap: 1px;
+}
+
+.orbit-stage--dense .orbit-node-btn--action {
+    padding: 3px;
+}
+
+.orbit-stage--dense .orbit-action-img {
+    width: 28px;
+    height: 28px;
+}
+
+.orbit-stage--dense .orbit-node-label {
+    font-size: 7px;
+    max-width: 52px;
+}
+
+.orbit-stage--dense .orbit-node-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.orbit-node {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    z-index: 2;
+}
+
+.orbit-node-inner {
+    transform: translate(-50%, -50%) rotate(var(--orbit-angle)) translateY(calc(-1 * var(--orbit-radius))) rotate(calc(-1 * var(--orbit-angle)));
+}
+
+.orbit-node-btn,
+.orbit-node-placeholder {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: 2px solid rgba(26, 26, 26, 0.22);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 3px 2px;
+    box-sizing: border-box;
+    margin: 0;
+    font-family: inherit;
+    gap: 2px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.orbit-node-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+}
+
+.orbit-node-btn:focus-visible {
+    outline: 3px solid rgba(74, 148, 104, 0.45);
+    outline-offset: 3px;
+}
+
+.orbit-node-btn--action {
+    padding: 4px;
+}
+
+.orbit-node-btn--expense {
+    background: #fde8e8;
+}
+
+.orbit-node-btn--income {
+    background: #e8f8ee;
+}
+
+.orbit-node-btn--category {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.orbit-node-btn--expense-cat {
+    background: #fde8e8;
+    border-color: rgba(213, 84, 84, 0.32);
+}
+
+.orbit-node-btn--income-cat {
+    background: #e8f8ee;
+    border-color: rgba(55, 140, 76, 0.32);
+}
+
+.orbit-action-img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.orbit-node-placeholder {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.orbit-node-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-align: center;
+    line-height: 1.05;
+    max-width: 62px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.orbit-node-btn svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.orbit-center-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 72%;
+    height: 72%;
+    max-width: 280px;
+    max-height: 280px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    border-radius: 50%;
+}
+
+.orbit-center-ring svg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.orbit-center-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(15px, 4vw, 21px);
+    font-weight: 800;
+    color: #1a1a1a;
+    text-align: center;
+    padding: 18%;
+}
+
+.app-container.app-container--wallet .bottom-bar {
+    border-radius: 0;
+    margin-top: 0;
+}
+
+.app-container.app-container--wallet .bottom-btns {
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    border-radius: 0;
+    background: var(--mint-bg);
+}
+
+@media (max-width: 768px) {
+    .orbit-stage.orbit-stage--radial {
+        --orbit-satellite-inset: 34px;
+        --orbit-radius: calc(min(88vw, 400px) / 2 - var(--orbit-satellite-inset));
+    }
+
+    .orbit-stage.orbit-stage--radial.orbit-stage--dense {
+        --orbit-satellite-inset: 30px;
+    }
+
+    html.wallet-page-root .orbit-stage.orbit-stage--radial {
+        --orbit-radius: calc(var(--orbit-shelf) / 2 - var(--orbit-satellite-inset));
+    }
+
+    .orbit-stage--dense .orbit-node-btn,
+    .orbit-stage--dense .orbit-node-placeholder {
+        width: 48px;
+        height: 48px;
+    }
+
+    .orbit-stage--dense .orbit-action-img {
+        width: 24px;
+        height: 24px;
+    }
+
+    .orbit-node-btn,
+    .orbit-node-placeholder {
+        width: 58px;
+        height: 58px;
+    }
+
+    .orbit-action-img {
+        width: 30px;
+        height: 30px;
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 // account.php - View and update user account
-require_once 'config.php';
+require_once __DIR__ . '/../functions/config.php';
 requireLogin();
 
 $pdo = getDBConnection();
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Settings - Monefy</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../css/styleAfterLogin.css">
     <style>
         .account-container {
             max-width: 800px;
@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
         
-        <a href="index.php" class="back-btn">Back</a>
+        <a href="homepage_after_login.php" class="back-btn">Back</a>
     </div>
     
     <script>

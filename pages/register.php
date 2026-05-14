@@ -1,10 +1,10 @@
 <?php
 // register.php - User registration page
-require_once 'config.php';
+require_once __DIR__ . '/../functions/config.php';
 
 // If already logged in, redirect to home
 if (isset($_SESSION['user_id'])) {
-    header('Location: homepage_after_login.php');
+    header('Location: ../index.php?page=home');
     exit;
 }
 
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_id'] = $user_id;
                     $_SESSION['username'] = $username;
                     $_SESSION['email'] = $email;
-                    header('Location: homepage_after_login.php');
+                    header('Location: ../index.php?page=home');
                     exit;
                 } else {
                     $error = 'Registration failed. Please try again.';
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Monefy Finance Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../css/styleAfterLogin.css">
     <style>
         .register-container {
             min-height: 100vh;
@@ -112,11 +112,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 32px;
         }
         /* New Brand Logo Styles */
-        .brand-logo {
-            height: 70px; /* Adjust height based on your image proportions */
-            width: auto;
-            max-width: 100%;
-            margin-bottom: 12px;
+        .brand-logo-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--green-dark);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 8px;
         }
         .register-logo h1 {
             font-size: 28px;
@@ -187,8 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="register-container">
         <div class="register-card">
             <div class="register-logo">
-                <!-- Updated Image Section -->
-                <img src="image/monefy.png" alt="Monefy Logo" class="brand-logo">
+                <div class="brand-logo brand-logo-text" aria-hidden="true">Monefy</div>
                 <h1>Create Account</h1>
             </div>
             

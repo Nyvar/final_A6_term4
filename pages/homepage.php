@@ -79,72 +79,15 @@
 </section>
 
 
-<!-- Cards + Reviews -->
-<section class="cards-section">
-<div class="cards">
-  <div class="card">
-
-    <div class="card saving-card">
-    <header><strong>Everything to get you financially secured and safe.</strong></header>
-    <p>safe, secured, stable</p>
-    
-    <!-- Saving wrapper -->
-    <div class="saving-wrap">
-      <!-- Smiley above middle -->
-        <div class="saving saving-middle">
-          <div class="smiley">😊</div>
-          <img src="../images/saves.png" alt="Saving">
-          <p>Saving</p>
-        </div>
-        <!-- Side cards -->
-        <div class="saving saving-left">
-          <img src="../images/saves.png" alt="Left">
-        </div>
-        <div class="saving saving-right">
-          <img src="../images/saves.png" alt="Right">
-        </div>
-      </div>
-    </div>
-
-  </div>
 
 
-  <div class="card">
-    <div class="card icon-card">
-  <div class="circle-icons">
-    <div class="circle"><img src="../images/tryagain.png" alt="Try Again"></div>
-    <div class="circle"><img src="../images/luy.png" alt="Card"></div>
-    <div class="circle"><img src="../images/insights.png" alt="Insight"></div>
-    <div class="circle"><img src="../images/notifs.png" alt="Notification"></div>
-  </div>
-</div>
+
+  
+
+  
 
 
-  </div>
-  <div class="card-long">
-    <img src="../images/baboon.gif" alt="monkey">
-  </div>
-
-
-  <div class="card-green reviews">
-    <div class="reviews">
-      <div class="reviews-inner">
-        <div class="review">⭐⭐⭐⭐⭐ "Wow this website is great" – Alexander, Web</div>
-        <div class="review">⭐⭐⭐⭐⭐ "Best budget app" – Sam, Playstore</div>
-        <div class="review">⭐⭐⭐⭐⭐ "I love this expense app" – Charles, Appstore</div>
-        <div class="review">⭐⭐⭐⭐⭐ "Helps me save daily" – Maria, Playstore</div>
-        <div class="review">⭐⭐⭐⭐⭐ "Fantastic design and easy to use" – John, Appstore</div>
-      </div>
-
-      <div class="review-dots">
-        <span class="dot active"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-       </div>
-     </div>
-  </div>
+  
 
   <div class="card-long guide">
     <h3>Noobie Guide + Hacks</h3>
@@ -219,11 +162,7 @@
   <div>© 2026 Luyfy | Support | Terms | Policy</div>
 </footer>
 
-<!-- Floating Download -->
-<div id="floating" class="floating-download">
-  <span>⬇️ Download Now</span>
-  <button onclick="closeFloating()">✖</button>
-</div>
+
 
 <script>
   function toggleAnswer(id) {
