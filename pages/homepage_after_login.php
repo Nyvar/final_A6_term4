@@ -1,6 +1,6 @@
 <?php
 // Main application file - index.php
-require_once 'config.php';
+require_once '../functions/config.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -321,7 +321,7 @@ $monthName = date('F Y');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Monefy - Personal Finance Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../css/styleAfterLogin.css">
     <style>
         /* Search Modal Styles */
         .search-modal {

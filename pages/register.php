@@ -4,7 +4,7 @@ require_once 'config.php';
 
 // If already logged in, redirect to home
 if (isset($_SESSION['user_id'])) {
-    header('Location: index.php');
+    header('Location: homepage_after_login.php');
     exit;
 }
 
@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_id'] = $user_id;
                     $_SESSION['username'] = $username;
                     $_SESSION['email'] = $email;
-                    header('Location: index.php');
+                    header('Location: homepage_after_login.php');
                     exit;
                 } else {
                     $error = 'Registration failed. Please try again.';
