@@ -1,10 +1,10 @@
 <?php
 // login.php - User authentication page
-require_once 'config.php';
+require_once '../functions/config.php';
 
 // If already logged in, redirect to home
 if (isset($_SESSION['user_id'])) {
-    header('Location: index.php');
+    header('Location: homepage_after_login.php');
     exit;
 }
 
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['email'] = $user['email'];
-            header('Location: index.php');
+            header('Location:  homepage_after_login.php');
             exit;
         } else {
             $error = 'Invalid username/email or password';
@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-card">
             <div class="login-logo">
                 <!-- Updated Image Section -->
-                <img src="image/monefy.png" alt="Monefy Logo" class="brand-logo">
+                <img src="../images/monefy.png" alt="Monefy Logo" class="brand-logo">
                 <p>Personal Finance Tracker</p>
             </div>
             
