@@ -85,7 +85,7 @@ const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
-  );
+  );''
 };
 
 export default HomeScreen;
