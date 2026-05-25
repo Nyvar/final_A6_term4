@@ -52,11 +52,16 @@ if (!$stmt->execute([$username, $email, $hashed_password])) {
 
 $user_id = (int) $pdo->lastInsertId();
 $stmt = $pdo->prepare("INSERT INTO Currency (user_id, currency_code, currency_name, symbol, wallet) VALUES 
-    (?, 'USD', 'US Dollar', '$', 5000),
-    (?, 'KHR', 'Cambodian Riel', '៛', 20000000),
-    (?, 'EUR', 'Euro', '€', 0),
-    (?, 'GBP', 'British Pound', '£', 0)");
-$stmt->execute([$user_id, $user_id, $user_id, $user_id]);
+    (?, ?, ?, ?, ?),
+    (?, ?, ?, ?, ?),
+    (?, ?, ?, ?, ?),
+    (?, ?, ?, ?, ?)");
+$stmt->execute([
+    $user_id, 'USD', 'US Dollar', '$', 5000,
+    $user_id, 'KHR', 'Cambodian Riel', '៛', 20000000,
+    $user_id, 'EUR', 'Euro', '€', 0,
+    $user_id, 'GBP', 'British Pound', '£', 0
+]);
 
 $token = bin2hex(random_bytes(16));
 $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));

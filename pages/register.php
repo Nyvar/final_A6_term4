@@ -52,11 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     // Create default currencies for the user
                     $stmt = $pdo->prepare("INSERT INTO Currency (user_id, currency_code, currency_name, symbol, wallet) VALUES 
-                        (?, 'USD', 'US Dollar', '$', 5000),
-                        (?, 'KHR', 'Cambodian Riel', '៛', 20000000),
-                        (?, 'EUR', 'Euro', '€', 0),
-                        (?, 'GBP', 'British Pound', '£', 0)");
-                    $stmt->execute([$user_id, $user_id, $user_id, $user_id]);
+                        (?, ?, ?, ?, ?),
+                        (?, ?, ?, ?, ?),
+                        (?, ?, ?, ?, ?),
+                        (?, ?, ?, ?, ?)");
+                    $stmt->execute([
+                        $user_id, 'USD', 'US Dollar', '$', 5000,
+                        $user_id, 'KHR', 'Cambodian Riel', '៛', 20000000,
+                        $user_id, 'EUR', 'Euro', '€', 0,
+                        $user_id, 'GBP', 'British Pound', '£', 0
+                    ]);
                     
                     // Auto login after registration
                     $_SESSION['user_id'] = $user_id;

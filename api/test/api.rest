@@ -1,13 +1,14 @@
-@url = http://localhost:8888/final_A6_term4/api/
-@token = 2d2308e97190c637874e44d07d50dd86
+@url = http://localhost/monefy/final_A6_term4/api/index.php
+@token = 3f29a13bdee80dde951d56b5447699ce
 
 ### Register
+# Make sure username/email are unique or use login instead if the user already exists.
 POST {{url}}?action=register
 Content-Type: application/json
 
 {
-  "username": "apiuser",
-  "email": "apiuser@example.com",
+  "username": "Piseth",
+  "email": "pisethsoun@gmail.com",
   "password": "123456",
   "confirm_password": "123456"
 }
@@ -17,8 +18,8 @@ POST {{url}}?action=login
 Content-Type: application/json
 
 {
-  "username": "kim",
-  "password": "1234567"
+  "username": "Piseth",
+  "password": "123456"
 }
 
 ### Login with token
@@ -155,8 +156,8 @@ Content-Type: application/json
 
 {
   "token": "{{token}}",
-  "username": "kim",
-  "email": "kim@example.com"
+  "username": "Piseth",
+  "email": "pisethsoun@gmail.com"
 }
 
 ### Change password
