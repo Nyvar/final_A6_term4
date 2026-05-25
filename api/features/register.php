@@ -57,8 +57,8 @@ $stmt = $pdo->prepare("INSERT INTO Currency (user_id, currency_code, currency_na
     (?, ?, ?, ?, ?),
     (?, ?, ?, ?, ?)");
 $stmt->execute([
-    $user_id, 'USD', 'US Dollar', '$', 5000,
-    $user_id, 'KHR', 'Cambodian Riel', '៛', 20000000,
+    $user_id, 'USD', 'US Dollar', '$', 0,
+    $user_id, 'KHR', 'Cambodian Riel', '៛', 0,
     $user_id, 'EUR', 'Euro', '€', 0,
     $user_id, 'GBP', 'British Pound', '£', 0
 ]);
