@@ -1,0 +1,180 @@
+@url = http://192.168.1.2:8080/final_A6_term/api/
+@token =087f194bc1e42da23af3d1897b6282bb
+
+
+### Register
+POST {{url}}?action=register
+Content-Type: application/json
+
+{
+  "username": "ks3",
+  "email": "ks3@example.com",
+  "password": "123456",
+  "confirm_password": "123456"
+}
+
+### Login
+POST {{url}}?action=login
+Content-Type: application/json
+
+{
+  "username": "admin2",
+  "password": "123456admin2"
+}
+
+### Login with token
+POST {{url}}?action=login_with_token
+Content-Type: application/json
+
+{
+  "token": "{{token}}"
+}
+
+### Dashboard (home data)
+POST {{url}}?action=get_dashboard
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "currency": "USD",
+  "date_filter": "month"
+}
+
+### Get currencies
+POST {{url}}?action=get_currencies
+Content-Type: application/json
+
+{
+  "token": "{{token}}"
+}
+
+### Update currency balance
+POST {{url}}?action=update_currency_balance
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "currency_code": "USD",
+  "amount": 5
+}
+
+### Get categories
+POST {{url}}?action=get_categories
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "record_type": "expense"
+}
+
+### Add category
+POST {{url}}?action=add_category
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "category_name": "Custom",
+  "record_type": "expense",
+  "color": "#6dbf8c"
+}
+
+### Delete category (use a real category_id from get_categories; never assume 1 exists)
+POST {{url}}?action=delete_category
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "category_id": 19
+}
+
+### Get payment methods
+POST {{url}}?action=get_payment_methods
+Content-Type: application/json
+
+{
+  "token": "{{token}}"
+}
+
+### Add expense (category_id must come from get_categories; example 2 = Housing if your DB matches seed data)
+POST {{url}}?action=add_expense
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "amount": 25.50,
+  "category_id": 2,
+  "payment_method_id": 1,
+  "currency_code": "USD",
+  "note": "Lunch"
+}
+
+### Add income
+POST {{url}}?action=add_income
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "amount": 1000,
+  "currency_code": "USD",
+  "note": "Salary"
+}
+
+### Transfer money
+POST {{url}}?action=transfer
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "amount": 100,
+  "from_currency": "USD",
+  "to_currency": "KHR",
+  "exchange_rate": 4000,
+  "note": ""
+}
+
+### Delete transaction
+POST {{url}}?action=delete_transaction
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "record_type": "expense",
+  "record_id": 1
+}
+
+### Get profile
+POST {{url}}?action=get_profile
+Content-Type: application/json
+
+{
+  "token": "{{token}}"
+}
+
+### Update profile
+POST {{url}}?action=update_profile
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "username": "kim",
+  "email": "kim@example.com"
+}
+
+### Change password
+POST {{url}}?action=change_password
+Content-Type: application/json
+
+{
+  "token": "{{token}}",
+  "current_password": "123456",
+  "new_password": "1234567",
+  "confirm_password": "1234567"
+}
+
+### Export transactions
+POST {{url}}?action=export_transactions
+Content-Type: application/json
+
+{
+  "token": "{{token}}"
+}
