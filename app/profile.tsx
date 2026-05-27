@@ -23,10 +23,21 @@ export default function Profile() {
     try {
       setLoading(true);
       const response = await getProfile();
-      if (response && response.success && response.data) {
+      console.log('Profile response:', response);
+      
+      // Handle API response format
+      if (response && response.status === 'success' && response.user) {
+        setUserData(response.user);
+        setEditUsername(response.user.username || '');
+        setEditEmail(response.user.email || '');
+      } else if (response && response.success && response.data) {
+        // Alternative format
         setUserData(response.data);
         setEditUsername(response.data.username || '');
         setEditEmail(response.data.email || '');
+      } else {
+        console.error('Unexpected response structure:', response);
+        Alert.alert('Error', 'Failed to load profile data: Unexpected response format');
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -39,8 +50,10 @@ export default function Profile() {
   const loadDashboard = async () => {
     try {
       const response = await getDashboard('USD', 'month');
-      if (response && response.success && response.data) {
-        setDashboardData(response.data);
+      console.log('Dashboard response:', response);
+      
+      if (response && response.status === 'success') {
+        setDashboardData(response);
       }
     } catch (error) {
       console.error('Error loading dashboard:', error);
@@ -56,9 +69,11 @@ export default function Profile() {
     setUpdating(true);
     try {
       const response = await updateProfile(editUsername.trim(), editEmail.trim());
-      if (response && response.success) {
+      console.log('Update profile response:', response);
+      
+      if (response && response.status === 'success') {
         Alert.alert('Success', 'Profile updated successfully');
-        await loadUserData();
+        await loadUserData(); // Reload to get fresh data
         setEditModalVisible(false);
       } else {
         Alert.alert('Error', response?.message || 'Failed to update profile');
@@ -98,6 +113,46 @@ export default function Profile() {
     router.push('/');
   };
 
+  // Calculate total balance from dashboard data
+  const getTotalBalance = () => {
+    if (dashboardData?.wallet_balance) {
+      return dashboardData.wallet_balance;
+    }
+    if (dashboardData?.total_balance) {
+      return dashboardData.total_balance;
+    }
+    if (dashboardData?.currencies) {
+      // Sum all currency wallets
+      const total = dashboardData.currencies.reduce((sum: number, currency: any) => {
+        return sum + parseFloat(currency.wallet || 0);
+      }, 0);
+      return total;
+    }
+    return 0;
+  };
+
+  const getCurrencySymbol = () => {
+    return dashboardData?.currency_symbol || dashboardData?.symbol || '$';
+  };
+
+  const getTotalIncome = () => {
+    return dashboardData?.total_income || 0;
+  };
+
+  const getTotalExpense = () => {
+    return dashboardData?.total_expense || 0;
+  };
+
+  const getDateRange = () => {
+    return dashboardData?.date_range_text || 'Current Month';
+  };
+
+  const totalBalance = getTotalBalance();
+  const currencySymbol = getCurrencySymbol();
+  const totalIncome = getTotalIncome();
+  const totalExpense = getTotalExpense();
+  const dateRange = getDateRange();
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -105,9 +160,6 @@ export default function Profile() {
       </View>
     );
   }
-
-  const totalBalance = dashboardData?.total_balance || 0;
-  const currencySymbol = dashboardData?.currency_symbol || '$';
 
   return (
     <View style={styles.container}>
@@ -146,10 +198,26 @@ export default function Profile() {
         <Text style={styles.infoText}>Email: {userData?.email || 'N/A'}</Text>
 
         <View style={styles.line} />
-        <Text style={styles.infoText}>Wallet Balance: {currencySymbol}{totalBalance.toFixed(2)}</Text>
+        <Text style={styles.infoText}>Wallet Balance: {currencySymbol}{typeof totalBalance === 'number' ? totalBalance.toFixed(2) : '0.00'}</Text>
 
         <View style={styles.line} />
+        <Text style={styles.infoText}>Total Income ({dateRange}): {currencySymbol}{totalIncome.toFixed(2)}</Text>
+
+        <View style={styles.line} />
+        <Text style={styles.infoText}>Total Expense ({dateRange}): {currencySymbol}{totalExpense.toFixed(2)}</Text>
+
+        <View style={styles.line} />
+        <Text style={styles.infoText}>Net Worth: {currencySymbol}{dashboardData?.total_net_worth_usd?.toFixed(2) || '0.00'}</Text>
+        
+        <View style={styles.line} />
         <Text style={styles.infoText}>Default Currency: USD</Text>
+        
+        {userData?.created_at && (
+          <>
+            <View style={styles.line} />
+            <Text style={styles.infoText}>Member Since: {new Date(userData.created_at).toLocaleDateString()}</Text>
+          </>
+        )}
         
         <View style={styles.line} />
 
