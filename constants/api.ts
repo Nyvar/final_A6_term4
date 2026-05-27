@@ -1,9 +1,10 @@
+// constants/api.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 /** Matches `api/rest.http` — path after host:port */
-export const API_PATH = '/final_A6_term4';
+export const API_PATH = '/final_A6_term4/api';  // Changed: added /api
 export const API_PORT = '8888';
 export const API_BASE_URL_STORAGE_KEY = 'api_base_url';
 
@@ -57,6 +58,6 @@ export function getApiBaseUrl(): string {
     return `http://localhost:${API_PORT}${API_PATH}`;
   }
 
-  // iOS / physical device: use your PC Wi‑Fi IP (same network as phone).
+  // iOS / physical device: use your PC Wi-Fi IP (same network as phone).
   return `http://${DEFAULT_LAN_IP}:${API_PORT}${API_PATH}`;
 }
