@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 
 /** Matches `api/rest.http` — path after host:port */
 export const API_PATH = '/final_A6_term4/api';  // Changed: added /api
-export const API_PORT = '8888';
+export const API_PORT = '8080';
 export const API_BASE_URL_STORAGE_KEY = 'api_base_url';
 
 const DEFAULT_LAN_IP = '192.168.1.2';
