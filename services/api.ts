@@ -19,41 +19,75 @@ export async function apiPost<T extends Record<string, unknown>>(
   body: Record<string, unknown>
 ): Promise<T> {
   const baseUrl = getApiBaseUrl();
+  // The action should be appended as a query parameter, but baseUrl already includes /api
   const url = `${baseUrl}/?action=${encodeURIComponent(action)}`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  const text = await response.text();
-  let data: T | null = null;
+  
+  console.log(`API Call: ${action} to ${url}`);
+  console.log('Request body:', body);
 
   try {
-    data = text ? (JSON.parse(text) as T) : null;
-  } catch {
-    data = null;
-  }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'  // Add this to request JSON
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (!response.ok) {
-    const message =
-      (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string'
+    console.log('Response status:', response.status);
+    console.log('Content-Type:', response.headers.get('content-type'));
+
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response received:', text.substring(0, 200));
+      throw new ApiError(
+        'Server returned HTML instead of JSON. Please check if the API endpoint is correct.',
+        response.status,
+        null
+      );
+    }
+
+    const text = await response.text();
+    console.log(`API Response (${action}):`, text);
+    
+    let data: T | null = null;
+
+    try {
+      data = text ? (JSON.parse(text) as T) : null;
+    } catch (error) {
+      console.error(`Failed to parse JSON for ${action}:`, error);
+      throw new ApiError('Invalid JSON response from server', response.status, null);
+    }
+
+    if (!response.ok) {
+      const message = (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string')
         ? data.message
-        : null) || `Request failed (${response.status})`;
-    throw new ApiError(message, response.status, data);
-  }
+        : `Request failed (${response.status})`;
+      throw new ApiError(message, response.status, data);
+    }
 
-  return (data ?? {}) as T;
+    return (data ?? {}) as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network request failed',
+      0,
+      null
+    );
+  }
 }
 
-// Dashboard
+// The rest of the functions remain the same...
 export async function getDashboard(currency: string = 'USD', date_filter: string = 'month') {
   const token = await getToken();
   return apiPost('get_dashboard', { token, currency, date_filter });
 }
 
-// Currencies
 export async function getCurrencies() {
   const token = await getToken();
   return apiPost('get_currencies', { token });
@@ -64,7 +98,6 @@ export async function updateCurrencyBalance(currency_code: string, amount: numbe
   return apiPost('update_currency_balance', { token, currency_code, amount });
 }
 
-// Categories
 export async function getCategories(record_type: 'expense' | 'income') {
   const token = await getToken();
   return apiPost('get_categories', { token, record_type });
@@ -80,13 +113,11 @@ export async function deleteCategory(category_id: number) {
   return apiPost('delete_category', { token, category_id });
 }
 
-// Payment Methods
 export async function getPaymentMethods() {
   const token = await getToken();
   return apiPost('get_payment_methods', { token });
 }
 
-// Transactions
 export async function addExpense(
   amount: number,
   category_id: number,
@@ -119,7 +150,6 @@ export async function deleteTransaction(record_type: string, record_id: number) 
   return apiPost('delete_transaction', { token, record_type, record_id });
 }
 
-// Profile
 export async function getProfile() {
   const token = await getToken();
   return apiPost('get_profile', { token });
@@ -148,11 +178,23 @@ export async function testApiConnection(): Promise<{ ok: boolean; message: strin
   try {
     const response = await fetch(`${baseUrl}/?action=login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify({ username: '__ping__', password: '__ping__' }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
+    
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return {
+        ok: false,
+        message: `Server returned HTML. Make sure your API server is running at ${baseUrl}`,
+      };
+    }
+    
     return {
       ok: true,
       message: `Connected to ${baseUrl} (HTTP ${response.status})`,
@@ -166,4 +208,3 @@ export async function testApiConnection(): Promise<{ ok: boolean; message: strin
     };
   }
 }
-
